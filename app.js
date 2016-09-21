@@ -9,8 +9,8 @@ var bill = { firstname: "William ", lastname: "Shakespeare"};
 var ed = { firstname: "Edgar", lastname: "Poe"};
 var doc = { firstname: "Dr", lastname: "Suess"};
 
-knex.insert([ed, doc]).into("author").returning("id").then(function(id) {
-  console.log('*********ID: ',id);
+knex("author").where("id", ">", 4).del().then(function(count) {
+  console.log(count);
   return knex("author");
 })
 .then(function(rows) {
