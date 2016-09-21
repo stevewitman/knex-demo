@@ -9,9 +9,10 @@ var bill = { firstname: "William ", lastname: "Shakespeare"};
 var ed = { firstname: "Edgar", lastname: "Poe"};
 var doc = { firstname: "Dr", lastname: "Suess"};
 
-knex("author").where("id", ">", 4).del().then(function(count) {
+knex("book").where("author_id", "=", 1).update({rating: 0})
+.then(function(count) {
   console.log(count);
-  return knex("author");
+  return knex("book").select("author_id", "title", "rating");
 })
 .then(function(rows) {
   screen.write(rows, "pretty");
