@@ -4,19 +4,56 @@ var screen = require("./screen");
 
 screen.clear();
 
-var charles = { firstname: "Charles", lastname: "Dickens"};
-var bill = { firstname: "William ", lastname: "Shakespeare"};
-var ed = { firstname: "Edgar", lastname: "Poe"};
-var doc = { firstname: "Dr", lastname: "Suess"};
+var doc = { firstname: "Dr.", lastname: "Suess" };
+var books = [
+  {title: "The Cat in the Hat", rating: 9},
+  {title: "Green Eggs and Ham", rating: 10}
+];
 
-knex("book").where("author_id", "=", 1).update({rating: 0})
-.then(function(count) {
-  console.log(count);
-  return knex("book").select("author_id", "title", "rating");
+knex.transaction(function(trx) {
+  return trx
+    .insert(doc, "id").into("author")
+    .then(function(idArr) {
+      var authorID = idArr[0];
+      for (var i=0; i<books.length; i++) {
+        books[i].author_id = authorID
+      }
+      return trx.insert(books).into("book");
+    });
 })
-.then(function(rows) {
-  screen.write(rows, "pretty");
+.then(function() {
+  screen.write(books.length + " books inserted", "pretty");
+})
+.catch(function(err) {
+  console.error(err);
 })
 .finally(function() {
   knex.destroy();
-});
+})
+
+// Alternative to using the promise aware syntax for transactions you
+// can instead use a syntax in which you manually commit on success
+// and rollback on error..
+
+// knex.transaction(function(trx) {
+//   trx
+//     .insert(doc, "id").into("author")
+//     .then(function(idArr) {
+//       var authorID = idArr[0];
+//       for (var i=0; i<books.length; i++) {
+//         books[i].author_id = authorID
+//       }
+//       return trx.insert(books).into("book");
+//     })
+//     .then(trx.commit)
+//     .catch(trx.rollback)
+// })
+// .then(function() {
+//   screen.write(books.length + " books inserted", "pretty");
+// })
+// .catch(function(err) {
+//   console.error(err);
+// })
+// .finally(function() {
+//   knex.destroy();
+// })
